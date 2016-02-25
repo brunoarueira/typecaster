@@ -39,9 +39,11 @@ module Typecaster
 
     def parse(text)
       result = Hash.new
+
       attributes_options.order.each do |attribute, options|
         result[attribute] = parse_attribute(text.slice!(0...options[:size]), options)
       end
+
       new(result, true)
     end
 
@@ -63,7 +65,7 @@ module Typecaster
       self.options = options
 
       instance_eval(&block)
-
+    ensure
       self.options = Hash.new
     end
 
@@ -136,11 +138,12 @@ module Typecaster
   def define_value(name, value)
     raise "attribute #{name} is not defined" if attributes_options[name].nil?
 
-    attributes_options[name][:value] = value
-    attributes_options[name][:attribute] = name
-
     unless @parsing
-      value = typecasted_attribute(attributes_options[name])
+      parsing_options = {
+        value: value
+      }
+
+      value = typecasted_attribute(attributes_options[name].merge(parsing_options))
     end
 
     attributes[name] = value
@@ -151,7 +154,7 @@ module Typecaster
   end
 
   def typecasted_attribute(options)
-    caster = options[:caster]
-    caster.call(options[:value], options)
+    caster = options.delete(:caster)
+    caster.call(options.delete(:value), options)
   end
 end

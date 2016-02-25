@@ -43,9 +43,9 @@ module Typecaster
         parsers_options.each do |parser_name, options|
           identifier = options[:identifier]
 
-          return parser_name unless identifier
-
-          return parser_name if line.start_with? identifier
+          if identifier.nil? || line.start_with?(identifier)
+            return parser_name
+          end
         end
       end
     end

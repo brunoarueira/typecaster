@@ -3,11 +3,11 @@ require 'spec_helper'
 class ObjectFormatter
   include Typecaster
 
-  attribute :age, :size => 3, :position => 2, :caster => IntegerTypecaster
+  attribute :age, size: 3, position: 2, caster: IntegerTypecaster
 
-  with_options :caster => StringTypecaster, :size => 10 do
-    attribute :name, :position => 1
-    attribute :identification, :position => 3, :default => "*"
+  with_options caster: StringTypecaster, size: 10 do
+    attribute :name, position: 1
+    attribute :identification, position: 3, default: "*"
   end
 end
 
@@ -16,11 +16,11 @@ class AnotherObjectFormatter
 
   output_separator ";"
 
-  attribute :age, :size => 3, :position => 2, :caster => IntegerTypecaster
+  attribute :age, size: 3, position: 2, caster: IntegerTypecaster
 
-  with_options :caster => StringTypecaster, :size => 10 do
-    attribute :name, :position => 1
-    attribute :identification, :position => 3, :default => "*"
+  with_options caster: StringTypecaster, size: 10 do
+    attribute :name, position: 1
+    attribute :identification, position: 3, default: "*"
   end
 end
 
@@ -38,13 +38,13 @@ describe Typecaster do
 
     context "with values" do
       subject do
-        ObjectFormatter.new(:name => "Ricardo", :age => 23, :identification => "R")
+        ObjectFormatter.new(name: "Ricardo", age: 23, identification: "R")
       end
 
       it "calls the caster class with the attribute options" do
-        attributes = { :default => "*", :caster => StringTypecaster, :size => 10, :value => "*", :attribute => :identification }
+        attributes = { default: "*", size: 10 }
 
-        StringTypecaster.should_receive(:call).with("*", attributes)
+        expect(StringTypecaster).to receive(:call).with("*", attributes)
 
         ObjectFormatter.new
       end
@@ -66,14 +66,14 @@ describe Typecaster do
       end
 
       it "should return a formatted hash" do
-        expect(subject.to_h).to eq(:name => "Ricardo   ", :age => "023", :identification => "R         ")
+        expect(subject.to_h).to eq(name: "Ricardo   ", age: "023", identification: "R         ")
       end
     end
 
     context "with invalid values" do
       it "should raise an error for the invalid field" do
         expect(lambda {
-          ObjectFormatter.new(:name => "Ricardo", :age => 23, :xpto => "R")
+          ObjectFormatter.new(name: "Ricardo", age: 23, xpto: "R")
         }).to raise_error("attribute xpto is not defined")
       end
     end
@@ -81,14 +81,14 @@ describe Typecaster do
     context "with a collection of values" do
       subject do
         ObjectFormatter.new([
-          { :name => "Ricardo", :age => 23, :identification => "R" },
-          { :name => "Cairo", :age => 26, :identification => "C" }
+          { name: "Ricardo", age: 23, identification: "R" },
+          { name: "Cairo", age: 26, identification: "C" }
         ])
       end
 
-      let(:first_object) { ObjectFormatter.new(:name => "Ricardo", :age => 23, :identification => "R") }
+      let(:first_object) { ObjectFormatter.new(name: "Ricardo", age: 23, identification: "R") }
 
-      let(:second_object) { ObjectFormatter.new(:name => "Cairo", :age => 26, :identification => "C") }
+      let(:second_object) { ObjectFormatter.new(name: "Cairo", age: 26, identification: "C") }
 
       context "#collection" do
         specify { expect(subject.collection).to eq [first_object, second_object] }
@@ -126,7 +126,7 @@ describe Typecaster do
     end
 
     it "should be equal to a hash with attributes" do
-      expect(subject).to eq(:name => "Ricardo", :age => 23.0, :identification => "R")
+      expect(subject).to eq(name: "Ricardo", age: 23.0, identification: "R")
     end
   end
 
@@ -147,14 +147,14 @@ describe Typecaster do
     it "parses the content" do
       expect(parsed_content).to eq([
         {
-          :name => "RICARDOHEN",
-          :age => 24,
-          :identification => "123"
+          name: "RICARDOHEN",
+          age: 24,
+          identification: "123"
         },
         {
-          :name => "ANACLAUDIA",
-          :age => 23,
-          :identification => "222"
+          name: "ANACLAUDIA",
+          age: 23,
+          identification: "222"
         }
       ])
     end
@@ -177,14 +177,14 @@ describe Typecaster do
     it "parses the content" do
       expect(parsed_content).to eq([
         {
-          :name => "RICARDOHEN",
-          :age => 24,
-          :identification => "123"
+          name: "RICARDOHEN",
+          age: 24,
+          identification: "123"
         },
         {
-          :name => "ANACLAUDIA",
-          :age => 23,
-          :identification => "222"
+          name: "ANACLAUDIA",
+          age: 23,
+          identification: "222"
         }
       ])
     end
