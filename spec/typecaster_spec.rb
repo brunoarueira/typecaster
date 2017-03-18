@@ -11,10 +11,23 @@ class ObjectFormatter
   end
 end
 
+class ObjectFormatterWithSeparator
+  include Typecaster
+
+  separator input: "#"
+
+  attribute :age, position: 2, caster: IntegerTypecaster
+
+  with_options caster: StringTypecaster do
+    attribute :name, position: 1
+    attribute :identification, position: 3, default: "*"
+  end
+end
+
 class AnotherObjectFormatter
   include Typecaster
 
-  output_separator ";"
+  separator output: ";"
 
   attribute :age, size: 3, position: 2, caster: IntegerTypecaster
 
@@ -161,32 +174,64 @@ describe Typecaster do
   end
 
   context "parsing a file" do
-    let :file do
-      File.open("spec/fixtures/sample_uniform_file.txt", "r")
+    context "without separator" do
+      let :file do
+        File.open("spec/fixtures/sample_uniform_file.txt", "r")
+      end
+
+      subject(:parsed_content) do
+        ObjectFormatter.parse_file(file)
+      end
+
+      it "is a array with ObjectFormatter instances" do
+        expect(parsed_content[0]).to be_instance_of(ObjectFormatter)
+        expect(parsed_content[1]).to be_instance_of(ObjectFormatter)
+      end
+
+      it "parses the content" do
+        expect(parsed_content).to eq([
+          {
+            name: "RICARDOHEN",
+            age: 24,
+            identification: "123"
+          },
+          {
+            name: "ANACLAUDIA",
+            age: 23,
+            identification: "222"
+          }
+        ])
+      end
     end
 
-    subject(:parsed_content) do
-      ObjectFormatter.parse_file(file)
-    end
+    context "with separator" do
+      let :file do
+        File.open("spec/fixtures/sample_with_separator.txt", "r")
+      end
 
-    it "is a array with ObjectFormatter instances" do
-      expect(parsed_content[0]).to be_instance_of(ObjectFormatter)
-      expect(parsed_content[1]).to be_instance_of(ObjectFormatter)
-    end
+      subject(:parsed_content) do
+        ObjectFormatterWithSeparator.parse_file(file)
+      end
 
-    it "parses the content" do
-      expect(parsed_content).to eq([
-        {
-          name: "RICARDOHEN",
-          age: 24,
-          identification: "123"
-        },
-        {
-          name: "ANACLAUDIA",
-          age: 23,
-          identification: "222"
-        }
-      ])
+      it "is a array with ObjectFormatter instances" do
+        expect(parsed_content[0]).to be_instance_of(ObjectFormatterWithSeparator)
+        expect(parsed_content[1]).to be_instance_of(ObjectFormatterWithSeparator)
+      end
+
+      it "parses the content" do
+        expect(parsed_content).to eq([
+          {
+            name: "RICARDOHEN",
+            age: 24,
+            identification: "123"
+          },
+          {
+            name: "ANACLAUDIA",
+            age: 23,
+            identification: "222"
+          }
+        ])
+      end
     end
   end
 end

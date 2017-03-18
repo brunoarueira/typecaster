@@ -29,8 +29,8 @@ module Typecaster
       @attributes_options ||= Hash.new
     end
 
-    def output_separator(separator)
-      @output_separator = separator
+    def separator(separators)
+      @separators = separators
     end
 
     def options
@@ -41,7 +41,17 @@ module Typecaster
       result = Hash.new
 
       attributes_options.order.each do |attribute, options|
-        result[attribute] = parse_attribute(text.slice!(0...options[:size]), options)
+        if input_separator_present?
+          separator_index = text.index(input_separator)
+
+          separator_index = separator_index ? separator_index + 1 : -1
+
+          handled_text = text.slice!(0...separator_index).gsub(/#{input_separator}/, '')
+
+          result[attribute] = parse_attribute(handled_text, options)
+        else
+          result[attribute] = parse_attribute(text.slice!(0...options[:size]), options)
+        end
       end
 
       new(result, true)
@@ -57,8 +67,12 @@ module Typecaster
       result
     end
 
-    def separator
-      @output_separator ||= ""
+    def output_separator
+      separators? && @separators[:output] ||= ""
+    end
+
+    def input_separator
+      separators? && @separators[:input] ||= ""
     end
 
     def with_options(options, &block)
@@ -74,6 +88,14 @@ module Typecaster
     def parse_attribute(value, options)
       klass = options[:caster]
       klass.parse(value)
+    end
+
+    def input_separator_present?
+      !input_separator.nil? && input_separator != ""
+    end
+
+    def separators?
+      @separators && !@separators.keys.empty?
     end
   end
 
@@ -121,7 +143,7 @@ module Typecaster
     if collection.any?
       collection.map(&:to_s).join("\n")
     else
-      attributes.values.join(self.class.separator)
+      attributes.values.join(self.class.output_separator)
     end
   end
 
